@@ -1,0 +1,9 @@
+#!/bin/bash
+# Switches between AZERTY and QWERTY keyboard modes
+if (setxkbmap -print | grep azerty); then
+    setxkbmap 'gb(extd)'
+    notify-send --expire-time=750 "locale" "QWERTY (gb[extd])"
+else
+	setxkbmap fr
+    notify-send --expire-time=750 "locale" "AZERTY (fr)"
+fi
