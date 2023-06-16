@@ -1,0 +1,11 @@
+#!/bin/bash
+# Parses lost to see if they've already been found
+[[ $# -lt 2 ]] && echo "args required (last dump, main file)" && exit 1
+lost_ids=$(grep -F '[NA]' "$1" | grep -o '{.*}' | sed 's/[{}]//g' )
+for id in $lost_ids; do
+    if grep -q "$id" $2; then
+        echo -e "\e[32m[V] $id found\e[0m"
+    else
+        echo -e "\e[31m[X] $id not found\e[0m"
+    fi
+done | sort -r
