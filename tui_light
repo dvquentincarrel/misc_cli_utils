@@ -38,9 +38,9 @@ class DisplaysHandler:
                 self.change_brightness(-1)
             case 261: # Right
                 self.change_brightness(1)
-            case 555: # Ctrl-Left
+            case 555 | 549: # Ctrl-Left
                 self.change_brightness(-5)
-            case 570: # Ctrl-Right
+            case 570 | 564: # Ctrl-Right
                 self.change_brightness(5)
             case 113: # q
                 raise KeyboardInterrupt
