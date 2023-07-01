@@ -1,0 +1,24 @@
+#!/bin/bash
+# Converts markdown to HTML using formatting I find saner.
+# Saves the hassle of including these tags everytime, and hides the
+# ghoulish cmark-gfm + sed call
+
+[[ $# -eq 0 ]] && exit 1
+
+cat > "tmp_$1" <<EOF
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/monokai-sublime.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+<style>
+code {
+    max-width: 50%;
+}
+</style>
+
+EOF
+cat "$1" >> "tmp_$1"
+cat >> "tmp_$1" <<< "<script>hljs.highlightAll();</script>"
+
+cmark-gfm -e tasklist --unsafe "tmp_$1" > "tmp_$1.html"
+sed -i 's/disabled=""//' "tmp_$1.html"
+firefox "tmp_$1.html"
+$(sleep 2 && rm "./tmp_$1"*)&
