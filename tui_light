@@ -54,16 +54,25 @@ class DisplaysHandler:
     def get_screen_infos(self):
         return "{0}    {1:.2f}".format(self.displays[self.selected][0], float(self.displays[self.selected][1]))
 
+def draw(box, msg = "", x = 0, y = 0, border = False, erase = True):
+    erase and box.erase()
+    border and box.border()
+    box.addstr(x, y, msg)
+    box.refresh()
+
 def main(stdscr):
-    curses.curs_set(0)
-    stdscr.clear()
     handler = DisplaysHandler()
+    infos = handler.get_screen_infos()
+    curses.curs_set(0)
+    setter = curses.newwin(2+handler.nb_screens, 50)
+    stdscr.clear()
     while(True):
         infos = handler.get_screen_infos()
-        stdscr.addstr(curses.LINES//2, (curses.COLS-len(infos))//2, infos)
+        setter.border()
+        draw(stdscr, infos, curses.LINES//2,(curses.COLS-len(infos))//2)
+        for index, display in enumerate(handler.get_brightness()):
+            draw(setter, str(display), index+1, 5, True, False)
         input = stdscr.getch()
-        stdscr.erase()
-        stdscr.refresh()
         handler.interpret_input(input)
 try:
     curses.wrapper(main)
