@@ -3,7 +3,7 @@
 
 lbin=${1:-"$HOME/.local/bin"}
 mkdir -p "$lbin"
-for executable in tui_light locale_toggle \
-        yt_pl_lost_and_found yt_pl_parse; do
-    ln -si "$PWD/$executable" "$lbin/$executable"
+files=$(find $PWD -type d -name '.git' -prune -o -type f -not -name 'setup.sh' -perm -100 -printf "%P\n")
+for executable in $files; do
+    ln -sv "$PWD/$executable" "$lbin/$executable"
 done
