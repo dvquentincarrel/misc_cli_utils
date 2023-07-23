@@ -1,0 +1,35 @@
+#!/bin/bash
+# wedit, Which EDIT
+
+if [[ $# -eq 0 ]] || [[ "$1" == "-h" ]]; then
+    echo "Usage: wedit COMMAND [EDITOR]"
+    echo 'Takes a command as an arg. If it is a script, opens it with $EDITOR if no editor is specified'
+    [[ $# -eq 0 ]] && exit 1 || exit 0
+fi
+
+if ! which "$1" &>/dev/null; then
+    echo "$1 is not a valid command" >&2
+    exit 1
+fi
+
+if [[ -z "$EDITOR" ]] && [[ $# -lt 2 ]]; then
+    echo 'No default editor in $EDITOR. You need to specify one'
+    exit 1
+fi
+
+if [[ $# -eq 2 ]]; then
+    if ! which "$2" &>/dev/null; then
+        echo "$2 is not a valid executable file"
+        exit 1
+    else
+        EDITOR="$2"
+    fi
+fi
+
+usr_command=$(which "$1" | head -n1 | xargs readlink -f)
+if file --mime "$usr_command" | grep charset=binary >/dev/null; then
+    echo "Cannot edit $1: it is a binary file" >&2
+    exit 1
+fi
+
+$EDITOR "$usr_command"
