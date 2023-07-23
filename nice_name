@@ -1,0 +1,40 @@
+#!/bin/bash
+# Removes spaces in filenames in cwd. Depth can be specified as $1
+if [[ $1 == "-h" ]]; then
+	echo "Usage: nice_name [-d] [DEPTH]"
+	echo "Removes spaces in filenames under cwd, up to specified depth (1 by default)"
+    echo "-d does a dry run, it shows you what would be renamed but does nothing"
+	exit 0
+fi
+
+DRY=false
+if [[ $1 == "-d" ]]; then
+    DRY=true
+    shift
+fi
+
+if [ -z $1 ]; then
+	depth=1
+else
+	depth=$1
+fi
+
+files=$(find -maxdepth $depth | grep -P '[ !\|\[\]\(\)]')
+
+if $DRY; then
+    echo $files
+    exit 0
+fi
+
+while read -r line; do
+    tmpline=$(sed -e 's/ /_/g'\
+        -e 's/!/_EQ/g'\
+        -e 's/\[/_OS/g'\
+        -e 's/\]/_CS/g'\
+        -e 's/(/_OP/g'\
+        -e 's/)/_CP/g'\
+        -e 's/|/_PI/g'\
+        -e 's/"/_DQ/g'\
+        -e "s/'/_SQ/g" <<< "$line")
+    mv -iv "$line" "$tmpline" 
+done <<< $files
