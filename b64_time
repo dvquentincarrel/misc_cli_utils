@@ -1,0 +1,14 @@
+#!/bin/bash
+# Condenses time to b64
+if [[ $# -lt 3 ]]; then
+    time=($(date +"%H %M %S" | sed 's/0\([0-9]\)/\1/g'))
+else
+    time=($(echo $@ | sed 's/0\([0-9]\)/\1/g'))
+fi
+b64_ref=(a b c d e f g h i j k l m n o p q r s t u v w x y z A B C D E F G H I J K L M N O P Q R S T U V W X Y Z 0 1 2 3 4 5 6 7 8 9)
+
+str_time=""
+for moment in ${time[@]}; do
+    str_time="$str_time${b64_ref[moment]}"
+done
+echo $str_time
