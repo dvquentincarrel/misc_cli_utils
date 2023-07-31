@@ -19,7 +19,9 @@ else
 	depth=$1
 fi
 
-files=$(find -maxdepth $depth | grep -P '[ !\|\[\]\(\)]')
+files=$(find -maxdepth $depth | grep -P '[ !\|\[\]\(\)"'"'"']')
+
+[[ -z "$files" ]] && exit 0
 
 if $DRY; then
     echo $files
@@ -33,8 +35,8 @@ while read -r line; do
         -e 's/\]/_CS/g'\
         -e 's/(/_OP/g'\
         -e 's/)/_CP/g'\
-        -e 's/|/_PI/g'\
-        -e 's/"/_DQ/g'\
-        -e "s/'/_SQ/g" <<< "$line")
+        -e 's/|/_/g'\
+        -e 's/"/_/g'\
+        -e "s/'/_/g" <<< "$line")
     mv -iv "$line" "$tmpline" 
 done <<< $files
