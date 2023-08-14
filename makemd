@@ -2,11 +2,12 @@
 # Converts markdown to HTML using formatting I find saner.
 # Saves the hassle of including these tags everytime, and hides the
 # ghoulish cmark-gfm + sed call
-
-[[ $# -eq 0 ]] && exit 1
+[[ $# -eq 0 ]] && [[ -t 0 ]] && exit 1
 [[ $1 = "-k" ]] && RM_HTML=false && shift
 
-cat > "tmp_$1" <<EOF
+fname={1:-nameless_md}
+
+cat > "tmp_$fname" <<EOF
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/monokai-sublime.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
 <style>
@@ -16,11 +17,11 @@ code {
 </style>
 
 EOF
-cat "$1" >> "tmp_$1"
-cat >> "tmp_$1" <<< "<script>hljs.highlightAll();</script>"
+cat ${1:--} >> "tmp_$fname"
+cat >> "tmp_$fname" <<< "<script>hljs.highlightAll();</script>"
 
-cmark-gfm -e tasklist --unsafe "tmp_$1" > "tmp_$1.html"
-rm "./tmp_$1"
-sed -i 's/disabled=""//' "tmp_$1.html"
-firefox "tmp_$1.html"
-$RM_HTML && $(sleep 2 && rm "./tmp_$1.html")& 
+cmark-gfm -e tasklist --unsafe "tmp_$fname" > "tmp_$fname.html"
+rm "./tmp_$fname"
+sed -i 's/disabled=""//' "tmp_$fname.html"
+firefox "tmp_$fname.html"
+$RM_HTML && $(sleep 2 && rm "./tmp_$fname.html")& 
