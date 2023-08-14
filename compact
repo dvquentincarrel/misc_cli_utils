@@ -1,0 +1,36 @@
+#!/bin/bash
+# Compacts input by displaying multiple input lines on a single output line
+
+SEPARATOR=
+COLUMNS=true
+
+while getopts "hcs:" opt; do
+    case $opt in
+        h) echo "Usage: cat myfile.txt | compact [OPTIONS]... COMPRESSION"
+           echo "Takes multi-line input from STDIN and prints COMPRESSION input lines"
+           echo "per output line. Breaks if your text contains the separator (bell, by default)"
+           echo "  -h show this message and exit"
+           echo "  -c disables columnized output"
+           echo "  -s SEP changes the separator. Only works with single characters"
+           exit 0;;
+        c) COLUMNS=false;;
+        s) SEPARATOR=$OPTARG;;
+        *) echo "invalid option '$opt'. Try -h for help"
+           exit 1;;
+        esac
+    done
+shift $((OPTIND -1)) 
+
+if [[ $# -eq 0 ]] || [[ "$1" =~ ^[^0-9]+$ ]]; then
+    echo "compact takes 1 argument, the number of input lines to print per output line"
+    exit 1
+fi
+
+# Reads stdin, NULs newlines, recursively replace every $1th nul by newline,
+# turns NULs into SERPARATOR for column
+output=$(cat - | tr '\n' '\0' | sed "s/\x0/\n/$1;P;D" | tr '\0' $SEPARATOR)
+if $COLUMNS; then
+    echo "$output" | column -t -s $SEPARATOR
+else
+    echo "$output" | tr $SEPARATOR ' '
+fi
