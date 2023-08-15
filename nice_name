@@ -1,5 +1,14 @@
 #!/bin/bash
 # Removes spaces in filenames in cwd. Depth can be specified as $1
+
+REPL_EXCLAM=true
+REPL_SQUARES=true
+REPL_PARENTH=true
+REPL_PIPE=true
+REPL_SQUOTES=true
+REPL_DQUOTES=true
+REPL_SPACE=true
+
 if [[ $1 == "-h" ]]; then
 	echo "Usage: nice_name [-d] [DEPTH]"
 	echo "Removes spaces in filenames under cwd, up to specified depth (1 by default)"
@@ -19,7 +28,19 @@ else
 	depth=$1
 fi
 
-files=$(find -maxdepth $depth | grep -P '[ !\|\[\]\(\)"'"'"']')
+sedpattern=()
+greppattern='['
+$REPL_EXCLAM && greppattern+='!' && sedpattern+=('-e' 's/!/_EQ/g')
+$REPL_PIPE && greppattern+='\|' && sedpattern+=('-e' 's/|/_/g')
+$REPL_PARENTH && greppattern+='\(\)' && sedpattern+=('-e' 's/(/_OP/g' '-e' 's/)/_CP/g')
+$REPL_SQUARES && greppattern+='\[\]' && sedpattern+=('-e' 's/\[/_OS/g' '-e' 's/\]/_CS/g')
+$REPL_SQUOTES && greppattern+="'" && sedpattern+=('-e' "s/'/_/g")
+$REPL_DQUOTES && greppattern+='"' && sedpattern+=('-e' 's/"//g')
+$REPL_SPACE && greppattern+=' ' && sedpattern+=('-e' 's/ /_/g')
+greppattern+=']'
+
+
+files=$(find -maxdepth $depth | grep -P "$greppattern" )
 
 [[ -z "$files" ]] && exit 0
 
@@ -29,14 +50,6 @@ if $DRY; then
 fi
 
 while read -r line; do
-    tmpline=$(sed -e 's/ /_/g'\
-        -e 's/!/_EQ/g'\
-        -e 's/\[/_OS/g'\
-        -e 's/\]/_CS/g'\
-        -e 's/(/_OP/g'\
-        -e 's/)/_CP/g'\
-        -e 's/|/_/g'\
-        -e 's/"/_/g'\
-        -e "s/'/_/g" <<< "$line")
+    tmpline=$(sed "${sedpattern[@]}" <<< "$line")
     mv -iv "$line" "$tmpline" 
 done <<< $files
