@@ -1,0 +1,33 @@
+#!/bin/python
+# Theft, because it sounds like the contraction of Time lEFT
+
+# Useful to compute how much time left you have to spend on something, and when
+# to get back to it if you have a limit on the earliest time you can stop working
+# on it
+import sys
+
+if(len(sys.argv) < 3):
+    print('Usage: theft TIME_TO_DO TIME_DONE [END_TIME]')
+    exit(0)
+
+def get_mins(duration: str) -> int:
+    "Extract nb of minutes from HH:MM formatted string"
+    hrs, mins = duration.split(':')
+    total_mins = int(hrs)*60 + int(mins)
+    return total_mins
+
+def stringify(duration: int) -> str:
+    "Extracts HH:MM string out of a number of minutes"
+    return ":".join(["{:02d}".format(val) for val in divmod(duration, 60)])
+
+total = get_mins(sys.argv[1])
+done = get_mins(sys.argv[2])
+left = total-done
+left_str = stringify(left)
+print("left to do : " + left_str)
+
+if(len(sys.argv) > 3):
+    final = get_mins(sys.argv[3])
+    start_at = final - left
+    start_str = stringify(start_at)
+    print("start at : " + start_str)
