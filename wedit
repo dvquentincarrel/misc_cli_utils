@@ -7,6 +7,10 @@ if [[ $# -eq 0 ]] || [[ "$1" == "-h" ]]; then
     [[ $# -eq 0 ]] && exit 1 || exit 0
 fi
 
+if type "$1" 2>/dev/null | grep 'is a function'; then
+    exit 1
+fi
+
 if ! which "$1" &>/dev/null; then
     echo "$1 is not a valid command" >&2
     exit 1
