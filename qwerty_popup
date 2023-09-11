@@ -6,6 +6,6 @@ if [[ -n $existing ]]; then
     kill $existing
 else
     i3-msg focus output left
-    feh $LAYOUT_PATH -^ QWERTY_LAYOUT & sleep 0.15
+    feh $LAYOUT_PATH -^ QWERTY_LAYOUT_[FLOATING] & sleep 0.15
     i3-msg focus output right
 fi
