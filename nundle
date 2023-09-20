@@ -1,0 +1,11 @@
+#!/bin/bash
+# Notes bUNDLE, easy notes packing/unpacking
+notes_path=${3:-notes}
+archive_path=${3:-notes.tgg}
+if [[ $1 == "-c" ]]; then
+    tar -C ~ -zcf - $notes_path | gpg --symmetric --cipher-algo aes256 --pinentry-mode loopback --passphrase "$2" -o notes.tgg
+elif [[ $1 == "-d" ]]; then
+    gpg --pinentry-mode loopback --passphrase "$2" -d $archive_path | tar -zxf -
+else
+    echo "Usage: nundle -c/-d PASSPHRASE"
+fi
