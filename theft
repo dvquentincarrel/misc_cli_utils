@@ -5,9 +5,12 @@
 # to get back to it if you have a limit on the earliest time you can stop working
 # on it
 import sys
+from datetime import datetime
+
+mode = sys.argv[0].split('/')[-1]
 
 if(len(sys.argv) < 3):
-    print('Usage: theft TIME_TO_DO TIME_DONE [END_TIME]')
+    print(f"Usage: {mode} TIME_TO_DO TIME_DONE {'[END_TIME]' if mode == 'theft' else '[START_TIME]'}")
     exit(0)
 
 def get_mins(duration: str) -> int:
@@ -27,7 +30,16 @@ left_str = stringify(left)
 print("left to do : " + left_str)
 
 if(len(sys.argv) > 3):
-    final = get_mins(sys.argv[3])
-    start_at = final - left
-    start_str = stringify(start_at)
-    print("start at : " + start_str)
+    if(mode == 'theft'):
+        final = get_mins(sys.argv[3])
+        start_at = final - left
+        start_str = stringify(start_at)
+        print("start at : " + start_str)
+    elif(mode == 'hope'):
+        if(len(sys.argv) == 4):
+            now = get_mins(sys.argv[3])
+        else:
+            now = get_mins(datetime.today().strftime('%H:%M'))
+        end_at = now + left
+        end_str = stringify(end_at)
+        print('End at: ' + end_str)
