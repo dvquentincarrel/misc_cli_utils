@@ -1,0 +1,18 @@
+#!/bin/python
+# Expands b64 time to HH:MM:SS
+import sys
+
+b64_ref = [
+'a',  'b',  'c',  'd',  'e',  'f',  'g',  'h',  'i',  'j',
+'k',  'l',  'm',  'n',  'o',  'p',  'q',  'r',  's',  't',
+'u',  'v',  'w',  'x',  'y',  'z',  'A',  'B',  'C',  'D',
+'E',  'F',  'G',  'H',  'I',  'J',  'K',  'L',  'M',  'N',
+'O',  'P',  'Q',  'R',  'S',  'T',  'U',  'V',  'W',  'X',
+'Y',  'Z',  '0',  '1',  '2',  '3',  '4',  '5',  '6',  '7',
+'8',  '9']
+
+if(len(sys.argv) < 2):
+    print("Usage: unb64_time B64_TIME", file=sys.stderr)
+
+time = ':'.join([str(b64_ref.index(char)) for char in sys.argv[1]])
+print(time)
