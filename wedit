@@ -1,5 +1,8 @@
-#!/bin/bash
+#!/bin/bash -i
 # wedit, Which EDIT
+
+funcviewer=$(command -v bat && echo -l bash || echo cat)
+aliasviewer=$(command -v galias || echo 'alias | grep')
 
 if [[ $# -eq 0 ]] || [[ "$1" == "-h" ]]; then
     echo "Usage: wedit COMMAND [EDITOR]"
@@ -7,14 +10,18 @@ if [[ $# -eq 0 ]] || [[ "$1" == "-h" ]]; then
     [[ $# -eq 0 ]] && exit 1 || exit 0
 fi
 
-if type "$1" 2>/dev/null | grep 'is a function'; then
-    exit 1
-fi
-
-if ! which "$1" &>/dev/null; then
-    echo "$1 is not a valid command" >&2
-    exit 1
-fi
+# Try to display info about input if it can't be easily edited
+case $(type -t "$1") in
+	'alias')
+		$aliasviewer "$1"
+		exit 1;;
+	'function')
+		type "$1" | tail -n+2 | $funcviewer
+		exit 1;;
+	'builtin')
+		help "$1"
+		exit 1;;
+esac
 
 if [[ -z "$EDITOR" ]] && [[ $# -lt 2 ]]; then
     echo 'No default editor in $EDITOR. You need to specify one'
@@ -31,9 +38,11 @@ if [[ $# -eq 2 ]]; then
 fi
 
 usr_command=$(which "$1" | head -n1 | xargs readlink -f)
-if file --mime "$usr_command" | grep charset=binary >/dev/null; then
-    echo "Cannot edit $1: it is a binary file" >&2
-    exit 1
+if file --mime "$usr_command" | grep 'charset=binary' >/dev/null; then
+	read -p "$1 looks like a binary file. Are you sure you want to edit it? (y/any): " ans
+	if [[ "$ans" != 'y' ]]; then
+		exit 0
+	fi
 fi
 
 $EDITOR "$usr_command"
