@@ -5,7 +5,7 @@ funcviewer=$(command -v bat && echo -l bash || echo cat)
 aliasviewer=$(command -v galias || echo 'alias | grep')
 
 if [[ $# -eq 0 ]] || [[ "$1" == "-h" ]]; then
-    echo "Usage: wedit COMMAND [EDITOR]"
+    echo "Usage: wedit COMMAND [EDITOR] [EDITOR_OPTS]"
     echo 'Takes a command as an arg. If it is a script, opens it with $EDITOR if no editor is specified'
     [[ $# -eq 0 ]] && exit 1 || exit 0
 fi
@@ -28,12 +28,13 @@ if [[ -z "$EDITOR" ]] && [[ $# -lt 2 ]]; then
     exit 1
 fi
 
-if [[ $# -eq 2 ]]; then
+if [[ $# -gt 1 ]]; then
     if ! which "$2" &>/dev/null; then
         echo "$2 is not a valid executable file"
         exit 1
     else
         EDITOR="$2"
+		EDITOR_OPTS="${@:3}"
     fi
 fi
 
@@ -45,4 +46,4 @@ if file --mime "$usr_command" | grep 'charset=binary' >/dev/null; then
 	fi
 fi
 
-$EDITOR "$usr_command"
+$EDITOR $EDITOR_OPTS "$usr_command" 
