@@ -4,23 +4,30 @@
 FETCH=false
 COLOR=true
 PARALLEL=true
+export ALL=false
 
-while getopts "fhnp" opt; do
+while getopts "fhnpa" opt; do
     case $opt in
         h) echo "Usage: dense_roach [-fn]"
            echo "Walks subdirectories to give a summary of the state of the repositories"
            echo "  -f does git fetch before building status"
            echo "  -n removes colorization"
            echo "  -p removes parallelization"
+		   echo "  -a looks at every branch (NIY)"
            exit 0;;
         f) FETCH=true;;
         n) COLOR=false;;
         p) PARALLEL=false;;
+		a) export ALL=true;;
         *) echo "invalid option '$opt'"
                 exit 1;;
         esac
     done
     shift $((OPTIND -1)) 
+
+function crawl_branches {
+	:
+}
 
 function get_infos {
     status=$(git -C "$1" status)
@@ -58,7 +65,11 @@ function check_dir {
             git -C "$1" fetch -q >/dev/null
             printf "\e[G\e[K"
         fi
-        get_infos "$1"
+		if $ALL; then
+			:
+		else
+			get_infos "$1"
+		fi
         return 0
     else
         return 1
