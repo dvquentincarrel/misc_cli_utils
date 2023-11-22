@@ -1,10 +1,8 @@
-#!/bin/bash
-# Switches between AZERTY and QWERTY keyboard modes
-if (setxkbmap -print | grep azerty); then
-    setxkbmap 'us(altgr-intl)'
-    # Absolute beast of a layout. No dead keys without altgr, can you believe that?!
-    notify-send --expire-time=750 "locale" "QWERTY (us(altgr-intl))"
-else
-	setxkbmap fr
-    notify-send --expire-time=750 "locale" "AZERTY (fr)"
+#!/bin/sh
+# Offers between sensible keyboard layouts
+locale=$(printf 'leyaourt\nus(altgr-intl)\nfr' | fmenu -I -d 65x10 -- "+m '--prompt=Layout: ' --preview=")
+#locale=$(printf 'leyaourt\nus(altgr-intl)\nfr' | dmenu)
+if [ -n "$locale" ]; then
+	setxkbmap $locale
+	notify-send -t 1500 "Locale set to $locale"
 fi
