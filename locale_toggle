@@ -1,6 +1,6 @@
 #!/bin/sh
 # Offers between sensible keyboard layouts
-cur_layout_name=$(setxkbmap -query | grep layout | column -tH 1)
+cur_layout_name=$(setxkbmap -query | grep 'layout:' | sed 's/^layout: *//')
 locale=$(
 	printf 'leyaourt\nus(altgr-intl)\nfr' | \
 	fmenu -I -d 50x10 -- \
