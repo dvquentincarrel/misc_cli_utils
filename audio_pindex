@@ -1,0 +1,32 @@
+#!/bin/bash
+# Requires xdotool; pacmd
+# Short for Pulseaudio INDEX
+# Outputs -1 if no index found, index # otherwise
+if [ -z $1 ]; then
+	OUTPUT="/dev/stdout"
+else
+	OUTPUT=$1
+fi
+# Separate PA input descriptions into paragraphs
+inputs=$(pacmd list-sink-inputs | sed -E 's/(^ +index:)/\n\1/')
+
+# Attempt to get part of window name after which PA input is named
+raw_input_name=$(xdotool getactivewindow getwindowname)
+if grep '—' >/dev/null <<< $raw_input_name; then
+	input_name=$(grep -o '^.* —' <<< $raw_input_name | rev | cut -b 6- | rev)
+elif grep '-' >/dev/null <<< $raw_input_name; then
+	input_name=$(rev <<< $raw_input_name | cut -d'-' -f 2- | rev)
+else
+	input_name=$raw_input_name
+fi
+
+# Extract one input in particular
+block=$(perl -00ne "print if /$input_name/i" <<< $inputs)
+if [ -z "$block" ]; then
+	notify-send "No input found for '$input_name'"
+	echo "-1" > $OUTPUT
+else
+	# Get the input's id
+	index=$(head -n1 <<< $block | awk '{print $2}')
+	echo $index > $OUTPUT
+fi
