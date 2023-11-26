@@ -2,7 +2,15 @@
 # Requires xdotool; pacmd
 # Short for Pulseaudio INDEX
 # Outputs -1 if no index found, index # otherwise
-if [ -z $1 ]; then
+
+if [ "$1" = '-h' ];then
+	echo 'Usage: audio_pindex [OUTPUT]'
+	echo 'Print PulseAudio index(es) of the sink input(s) related to to focused window'
+	echo 'Example: audio_pindex | app_vol +5%'
+	exit 0
+fi
+
+if [ -z "$1" ]; then
 	OUTPUT="/dev/stdout"
 else
 	OUTPUT=$1
@@ -27,6 +35,6 @@ if [ -z "$block" ]; then
 	echo "-1" > $OUTPUT
 else
 	# Get the input's id
-	index=$(head -n1 <<< $block | awk '{print $2}')
-	echo $index > $OUTPUT
+	index=$(grep -E '^ +index:' <<< $block | awk '{print $2}')
+	echo "$index" > $OUTPUT
 fi
