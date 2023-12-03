@@ -12,11 +12,28 @@ index=($(audio_pindex))
 echo "index: $index"
 if [[ "${index[@]}" != '-1' ]]; then
 	# Sometimes, inputs are indistinguishables. Safe bet is to affect all of them
+	if [[ "${#index[@]}" -gt 1 ]]; then
+		multi_input=true
+	else
+		multi_input=false
+	fi
 	for line in "${index[@]}"; do
 		pactl set-sink-input-volume $line $1
-		vol=$(pacmd list-sink-inputs | grep -P -A5 "index: $line" | tail -n1 | awk -F"/" '{print $2}' | sed 's/ //g')
-		echo "vol: $vol"
-		total_vol="$total_vol $vol"
+		read -r vol name <<< $(
+			pactl list sink-inputs | perl -00n -e "if(/Sink Input #$line/) {" \
+			-e '/Volume.*?(\d+%)/; print "$1 ";' \
+			-e '/media.name = "(.*)"/; print $1; }'
+		)
+		if $multi_input; then
+			total_vol+=("[$name] $vol")
+		else
+			title="'$name'"
+			total_vol="$vol"
+		fi
 	done
-	notify-send -t 500 "$total_vol"
+	set -- "${total_vol[@]}"
+	IFS=$'\n'
+	old_notif=$(grep '[0-9]' /tmp/app_vol_id || echo 0)
+	notify-send -r $old_notif -p -t 1000 $name "$*" > /tmp/app_vol_id
 fi
+
