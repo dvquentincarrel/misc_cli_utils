@@ -4,14 +4,22 @@
 SEPARATOR=
 COLUMNS=true
 
+
+read -rd '' helpmsg <<EOF
+Takes multi-line input from STDIN and prints COMPRESSION input lines
+per output line. Breaks if your text contains the separator (bell, by default)
+
+\x1b[1mUsage\x1b[m: cat myfile.txt | compact [\x1b[36mOPTION\x1b[m]... \x1b[36mCOMPRESSION\x1b[m
+
+\x1b[1mParameters\x1b[m:
+  -h  show this message and exit
+  -c  disables columnized output
+  -s  SEP changes the separator. Only works with single characters
+EOF
+
 while getopts "hcs:" opt; do
     case $opt in
-        h) echo "Usage: cat myfile.txt | compact [OPTIONS]... COMPRESSION"
-           echo "Takes multi-line input from STDIN and prints COMPRESSION input lines"
-           echo "per output line. Breaks if your text contains the separator (bell, by default)"
-           echo "  -h show this message and exit"
-           echo "  -c disables columnized output"
-           echo "  -s SEP changes the separator. Only works with single characters"
+        h) echo -e "$helpmsg" >&2
            exit 0;;
         c) COLUMNS=false;;
         s) SEPARATOR=$OPTARG;;
@@ -22,7 +30,7 @@ while getopts "hcs:" opt; do
 shift $((OPTIND -1)) 
 
 if [[ $# -eq 0 ]] || [[ "$1" =~ ^[^0-9]+$ ]]; then
-    echo "compact takes 1 argument, the number of input lines to print per output line"
+    echo -e "$helpmsg" >&2
     exit 1
 fi
 
