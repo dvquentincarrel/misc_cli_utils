@@ -1,12 +1,46 @@
 #!/bin/bash
 # Notes bUNDLE, easy notes packing/unpacking
-pw=${2:-$NUNDLE}
-notes_path=${3:-notes}
-archive_path=${3:-notes.tgg}
-if [[ $1 == "-c" ]]; then
-    tar -C ~ -zcf - $notes_path | gpg --symmetric --cipher-algo aes256 --pinentry-mode loopback --passphrase "$pw" -o notes.tgg
-elif [[ $1 == "-d" ]]; then
-    gpg --pinentry-mode loopback --passphrase "$pw" -d $archive_path | tar -zxf -
-else
-    echo "Usage: nundle -c/-d PASSPHRASE"
+
+read -d '' help_msg <<EOF
+Usage: nundle MODE SOURCE DESTINATION
+Bundle and unbundle your notes easily
+Example: cat PW_FILE | nundle -c ~/my_notes/ ~/notes.tgg
+         nundle -d ~/notes.tgg ~/my_notes/
+Modes:
+  -c    compress (bundle) the notes
+  -d    decompress (unbundle) the notes
+EOF
+while getopts "hcd" opt; do
+    case $opt in
+        h)  echo "$help_msg"
+            exit 0;;
+        c)  mode=bundle;;
+        d)  mode=unbundle;;
+        *)  echo "invalid option '$opt'"
+            exit 1;;
+        esac
+    done
+    shift $((OPTIND -1))
+
+if [[ -z "$mode" ]]; then
+    echo -e "\x1b[31mError:\x1b[m You need to specify a mode to use nundle"
+    echo "$help_msg"
+    exit 1
+elif [[ $# -ne 2 ]]; then
+    echo -e "\x1b[31mError:\x1b[m Not exactly 3 mandatory args given"
+    echo "$help_msg"
+    exit 1
+fi
+
+read -s -p "Please enter the password: " password
+echo ""
+
+if [[ "$mode" == bundle ]]; then
+    src_root=$(realpath "$1" | xargs dirname)
+    src_leaf=$(realpath "$1" | xargs basename)
+    tar -C "$src_root" -zcf - "$src_leaf"\
+  | gpg --symmetric --cipher-algo aes256 --pinentry-mode loopback --passphrase "$password" -o "$2"
+elif [[ "$mode" == unbundle ]]; then
+    gpg --pinentry-mode loopback --passphrase "$password" -d "$1"\
+  | tar -C "$2" -zxf -
 fi
