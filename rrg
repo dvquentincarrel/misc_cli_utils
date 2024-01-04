@@ -1,7 +1,7 @@
 #!/bin/bash
 # Recursive rg
 
-read -d'' helpmsg <<EOF
+read -d '' helpmsg <<EOF
 Usage: rrg [OPTION]... PATTERN1 PATTERN2...
 Recursive ripgrep, find matches in files with matches in files with matches in fi...
 Example: rrg standard_offer category_id execute 'please select'
