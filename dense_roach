@@ -3,10 +3,12 @@
 
 FETCH=false
 export COLOR=true
+export COLUMNIZE=true
+export SEPARATOR=';'
 PARALLEL=true
 export ALL=false
 
-while getopts "fhnpa" opt; do
+while getopts "fhnpaC" opt; do
     case $opt in
         h) echo "Usage: dense_roach [-fn]"
            echo "Walks subdirectories to give a summary of the state of the repositories"
@@ -14,73 +16,80 @@ while getopts "fhnpa" opt; do
            echo "  -n removes colorization"
            echo "  -p removes parallelization"
 		   echo "  -a looks at every branch (NIY)"
+		   echo "  -C does not columnize output"
            exit 0;;
         f) FETCH=true;;
         n) export COLOR=false;;
         p) PARALLEL=false;;
 		a) export ALL=true;;
+		C) export COLUMNIZE=false;
+           export SEPARATOR='';;
         *) echo "invalid option '$opt'"
                 exit 1;;
         esac
     done
     shift $((OPTIND -1)) 
 
-function crawl_branches {
-	:
-}
+{ # Group everything to pipe all output
 
-function get_infos {
-    status=$(git -C "$1" status)
-    porcelain_status=$(git -C "$1" status --porcelain=1)
-    flag=false
-    grep -q "ahead\|diverged" <<< "$status" && ahead="AHEAD" && flag=true
-    grep -q "behind\|diverged" <<< "$status" && behind="BEHIND" && flag=true
-    untracked=$(grep -c '^??' <<< "$porcelain_status")
-    unstaged=$(grep -c '^ .\|^MM' <<< "$porcelain_status")
-    staged=$(grep -c '^. \|^MM' <<< "$porcelain_status")
-    if [[ $((untracked + unstaged + staged)) -gt 0 ]]; then
-        flag=true
-    fi
-    if $flag; then
-        if $COLOR; then
-            echo -e "\e[1m$1\e[m: \e[35m$ahead \e[36m$behind \e[32m$staged \e[33m$unstaged \e[31m$untracked\e[m"
+    function crawl_branches {
+        :
+    }
+
+    function get_infos {
+        status=$(git -C "$1" status)
+        porcelain_status=$(git -C "$1" status --porcelain=1)
+        flag=false
+        grep -q "ahead\|diverged" <<< "$status" && ahead="AHEAD" && flag=true
+        grep -q "behind\|diverged" <<< "$status" && behind="BEHIND" && flag=true
+        untracked=$(grep -c '^??' <<< "$porcelain_status")
+        unstaged=$(grep -c '^ .\|^MM' <<< "$porcelain_status")
+        staged=$(grep -c '^. \|^MM' <<< "$porcelain_status")
+        if [[ $((untracked + unstaged + staged)) -gt 0 ]]; then
+            flag=true
+        fi
+        if $flag; then
+            if $COLOR; then
+                echo -e "\e[1m$1\e[m$SEPARATOR $SEPARATOR \e[95m$ahead$SEPARATOR \e[96m$behind$SEPARATOR \e[32m$staged \e[33m$unstaged \e[31m$untracked\e[m"
+            else
+                echo "$1$SEPARATOR $SEPARATOR $ahead$SEPARATOR $behind$SEPARATOR $staged $unstaged $untracked"
+            fi
         else
-            echo "$1: $ahead $behind $staged $unstaged $untracked"
+            if $COLOR; then
+                echo -e "\x1b[1m$1$SEPARATOR \x1b[34mUp to date\x1b[m$SEPARATOR $SEPARATOR $SEPARATOR"
+            else
+                echo "$1$SEPARATOR Up to date$SEPARATOR $SEPARATOR $SEPARATOR"
+            fi
         fi
-    else
-        if $COLOR; then
-            echo -e "\x1b[1m$1: \x1b[34mUp to date\x1b[m"
+    }
+    export -f get_infos
+
+    function check_dir {
+        root=$(git -C "$1" rev-parse --show-toplevel 2>/dev/null | xargs basename 2>/dev/null)
+        if [[ -n "$root" ]] && [[ "$root" == "$1" ]]; then
+            if $2; then
+                printf "fetching $1..."
+                git -C "$1" fetch -q >/dev/null
+                printf "\e[G\e[K"
+            fi
+            if $ALL; then
+                :
+            else
+                get_infos "$1"
+            fi
+            return 0
         else
-            echo "$1: Up to date"
+            return 1
         fi
-    fi
-}
-export -f get_infos
+    }
+    export -f check_dir
 
-function check_dir {
-    root=$(git -C "$1" rev-parse --show-toplevel 2>/dev/null | xargs basename 2>/dev/null)
-    if [[ -n "$root" ]] && [[ "$root" == "$1" ]]; then
-        if $2; then
-            printf "fetching $1..."
-            git -C "$1" fetch -q >/dev/null
-            printf "\e[G\e[K"
-        fi
-		if $ALL; then
-			:
-		else
-			get_infos "$1"
-		fi
-        return 0
+
+    if $PARALLEL; then
+        content=$(find * -type d -prune)
+        parallel check_dir {1} $FETCH ::: $content
     else
-        return 1
+        find * -maxdepth 0 -type d -exec bash -c "check_dir {} $FETCH" ';'
     fi
-}
-export -f check_dir
 
-
-if $PARALLEL; then
-    content=$(find * -type d -prune)
-    parallel check_dir {1} $FETCH ::: $content
-else
-    find * -maxdepth 0 -type d -exec bash -c "check_dir {} $FETCH" ';'
-fi
+} | ( $COLUMNIZE && column -t -s ';' || cat )
