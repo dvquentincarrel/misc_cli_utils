@@ -15,9 +15,9 @@ function feedback {
         color="#$1"
     else
         if [[ $prev_val -eq 0 ]];then
-            color="#00FF00"
+            color="#3CA73A"
         else
-            color="#FF0000"
+            color="#B44444"
         fi
     fi
     convert -size 16x9 xc:$color jpg:- | feh -F - >& /dev/null
