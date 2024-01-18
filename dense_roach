@@ -2,7 +2,7 @@
 # Dense Roach, as in Git Crawler (yes, I know)
 
 FETCH=false
-COLOR=true
+export COLOR=true
 PARALLEL=true
 export ALL=false
 
@@ -16,7 +16,7 @@ while getopts "fhnpa" opt; do
 		   echo "  -a looks at every branch (NIY)"
            exit 0;;
         f) FETCH=true;;
-        n) COLOR=false;;
+        n) export COLOR=false;;
         p) PARALLEL=false;;
 		a) export ALL=true;;
         *) echo "invalid option '$opt'"
