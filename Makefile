@@ -21,4 +21,4 @@ install:
 	-@ln -Ts -$(clobber) $$PWD/yt_pl_parse $(bin_dir)/
 	-@ln -Ts -$(clobber) $$PWD/_feedback.bash $(bash_setup_dir)/999_feedback.bash
 	-@ln -Ts -$(clobber) $$PWD/rrg $(HOME)/.local/bin/rrg
-	-@ln -Ts -$(clobber) $$PWD/shorten_path $(HOME)/.local/bin/shorten_path
+	-@ln -Ts -$(clobber) $$PWD/shorten_path.pl $(HOME)/.local/bin/shorten_path
