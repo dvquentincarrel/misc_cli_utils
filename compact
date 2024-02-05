@@ -1,13 +1,13 @@
 #!/bin/bash
 # Compacts input by displaying multiple input lines on a single output line
 
-SEPARATOR=
+SEPARATOR=
 COLUMNS=true
 
 
 read -rd '' helpmsg <<EOF
 Takes multi-line input from STDIN and prints COMPRESSION input lines
-per output line. Breaks if your text contains the separator (bell, by default)
+per output line. Breaks if your text contains the separator (ascii 31 by default)
 
 \x1b[1mUsage\x1b[m: cat myfile.txt | compact [\x1b[36mOPTION\x1b[m]... \x1b[36mCOMPRESSION\x1b[m
 
