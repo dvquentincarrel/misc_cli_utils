@@ -1,4 +1,4 @@
-#!/bin/bash -i
+#!/bin/bash
 # wedit, Which EDIT
 
 funcviewer=$(command -v bat && echo -l bash || echo cat)
@@ -38,7 +38,12 @@ if [[ $# -gt 1 ]]; then
     fi
 fi
 
-usr_command=$(which "$1" | head -n1 | xargs readlink -f)
+usr_command=$(which "$1" | head -n1 | xargs readlink -f 2>/dev/null)
+if [[ -z "$usr_command" ]]; then
+    echo "Nothing found for '$1'"
+    exit 1
+fi
+
 if file --mime "$usr_command" | grep 'charset=binary' >/dev/null; then
 	read -p "$1 looks like a binary file. Are you sure you want to edit it? (y/any): " ans
 	if [[ "$ans" != 'y' ]]; then
