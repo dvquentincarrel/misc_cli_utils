@@ -8,15 +8,19 @@ export SEPARATOR=';'
 PARALLEL=true
 export ALL=false
 
+read -d '' help_msg <<EOF
+Usage: dense_roach [-fn]
+Walks subdirectories to give a summary of the state of the repositories
+  -f    does git fetch before building status
+  -n    removes colorization
+  -p    removes parallelization
+  -a    looks at every branch (NIY)
+  -C    does not columnize output
+EOF
+
 while getopts "fhnpaC" opt; do
     case $opt in
-        h) echo "Usage: dense_roach [-fn]"
-           echo "Walks subdirectories to give a summary of the state of the repositories"
-           echo "  -f does git fetch before building status"
-           echo "  -n removes colorization"
-           echo "  -p removes parallelization"
-		   echo "  -a looks at every branch (NIY)"
-		   echo "  -C does not columnize output"
+        h) echo "$help_msg"
            exit 0;;
         f) FETCH=true;;
         n) export COLOR=false;;
@@ -68,9 +72,9 @@ while getopts "fhnpaC" opt; do
         root=$(git -C "$1" rev-parse --show-toplevel 2>/dev/null | xargs basename 2>/dev/null)
         if [[ -n "$root" ]] && [[ "$root" == "$1" ]]; then
             if $2; then
-                printf "fetching $1..."
+                printf "fetching $1...\n" 1>&2
                 git -C "$1" fetch -q >/dev/null
-                printf "\e[G\e[K"
+                printf "\e[G\e[K" 1>&2
             fi
             if $ALL; then
                 :
@@ -87,7 +91,7 @@ while getopts "fhnpaC" opt; do
 
     if $PARALLEL; then
         content=$(find * -type d -prune)
-        parallel check_dir {1} $FETCH ::: $content
+        parallel -u check_dir {1} $FETCH ::: $content
     else
         find * -maxdepth 0 -type d -exec bash -c "check_dir {} $FETCH" ';'
     fi
