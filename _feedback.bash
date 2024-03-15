@@ -11,14 +11,5 @@ function feedback {
             esac
         done
         shift $((OPTIND -1))
-    if [[ -n $1 ]];then
-        color="#$1"
-    else
-        if [[ $prev_val -eq 0 ]];then
-            color="#3CA73A"
-        else
-            color="#B44444"
-        fi
-    fi
-    convert -size 16x9 xc:$color jpg:- | feh -F - >& /dev/null
+    _feedback $prev_val "$@"
 }
