@@ -8,6 +8,7 @@ Example: rrg standard_offer category_id execute 'please select'
 
 Parameters:
   -c            forces colored output
+  -t EXTENSION  only searches for files with the given file extension
   -C CONTEXT    changes the number of lines of context (default is 5)
 EOF
 
@@ -15,9 +16,11 @@ counter=0
 files=""
 color=auto
 context=5
+ext=""
 
-while getopts "hcC:" opt; do
+while getopts "hct:C:" opt; do
     case $opt in
+        t)  ext="-t $OPTARG";;
         h)  echo "$helpmsg"
             exit 0;;
         c)  color=always;;
@@ -32,9 +35,9 @@ while getopts "hcC:" opt; do
 for pattern in "$@"; do
     ((counter ++))
     if [[ $counter -eq $# ]]; then
-        rg --color=$color -C $context "$pattern" $files
+        rg $ext -u --color=$color -C $context "$pattern" $files
     else
-        files=$(rg -l "$pattern" $files)
+        files=$(rg $ext -l -u "$pattern" $files)
     fi
 
 done
