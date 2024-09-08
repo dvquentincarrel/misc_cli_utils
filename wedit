@@ -12,15 +12,9 @@ fi
 
 # Try to display info about input if it can't be easily edited
 case $(type -t "$1") in
-	'alias')
-		$aliasviewer "$1"
-		exit 1;;
-	'function')
-		type "$1" | tail -n+2 | $funcviewer
-		exit 1;;
-	'builtin')
-		help "$1"
-		exit 1;;
+    'builtin')
+        help "$1"
+        exit 1;;
 esac
 
 if [[ -z "$EDITOR" ]] && [[ $# -lt 2 ]]; then
@@ -40,8 +34,33 @@ fi
 
 usr_command=$(which "$1" | head -n1 | xargs readlink -f 2>/dev/null)
 if [[ -z "$usr_command" ]]; then
-    echo "Nothing found for '$1'"
+    # Last ditch effort to find aliases or functions
+    output=$(bash -i 2>/dev/null <<EOF | tail -n1
+    shopt -s extdebug
+    export PROMPT_COMMAND=''
+    export PS0=''
+    echo ''
+    case \$(type -t "$1") in
+        'alias')
+            declare -F "$1"
+            #$aliasviewer "$1"
+            exit 0;;
+        'function')
+            declare -F "$1"
+            #type "$1" | tail -n+2 | bat --color always --language bash
+            exit 0;;
+    esac
     exit 1
+EOF
+    )
+    if [[ -z $output ]];then
+        echo "Nothing found for '$1'"
+        exit 1
+    fi
+
+    infos=($output)
+    $EDITOR ${infos[2]} +${infos[1]}
+    exit 0
 fi
 
 if file --mime "$usr_command" | grep 'charset=binary' >/dev/null; then
