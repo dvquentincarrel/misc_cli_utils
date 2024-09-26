@@ -20,4 +20,4 @@ else
         color="#B44444"
     fi
 fi
-convert -size 16x9 xc:$color jpg:- | feh -F - >& /dev/null
+convert -size 16x9 xc:$color jpg:- | feh -Z -F - >& /dev/null
