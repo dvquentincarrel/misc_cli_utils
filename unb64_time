@@ -1,4 +1,4 @@
-#!/bin/python
+#!/bin/env python
 # Expands b64 time to HH:MM:SS
 import sys
 
