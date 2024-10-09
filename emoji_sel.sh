@@ -1,4 +1,5 @@
 #!/bin/env bash
+
 cache_dir=${XDG_CACHE_DIR:-~/.cache}
 if ! [[ -f $cache_dir/emojis.txt ]]; then
     echo "Emoji file not found. Downloading it..." 1>&2
@@ -16,6 +17,11 @@ g/unqualified/d
 g/./p
 EOF
 
-ed "$cache_dir"/emojis.txt <<< "$ed_script" |
+output=$(ed "$cache_dir"/emojis.txt <<< "$ed_script" |
 fzf |
-awk '{print $1 } END {print "\n"}' ORS=''
+awk '{print $1 } END {print "\n"}' ORS='')
+if [[ $1 = -n ]]; then
+    printf '%s' "$output"
+else
+    printf '%s' "$output" | xclip -sel clip
+fi

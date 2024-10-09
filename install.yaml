@@ -10,7 +10,7 @@ installation:
     - b64_time
     - compact
     - dense_roach
-    - emoji_sel.bash
+    - emoji_sel.sh
     - fmenu
     - globgrep.bash
     - locale_toggle
