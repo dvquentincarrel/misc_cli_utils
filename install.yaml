@@ -3,6 +3,7 @@ dependencies:
 installation:
   scripts:
     dir: $HOME/.local/bin
+    strip_ext: true
     files:
     - _feedback
     - app_vol
@@ -23,9 +24,8 @@ installation:
     - tui_light
     - unb64_time
     - wedit
+    - doat.bash
     - yt_pl_parse
-
-    strip_ext: true
   setup:
     dir: $HOME/.config/bash/setup
     renamed_files:
