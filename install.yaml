@@ -1,36 +1,24 @@
 dependencies:
-- 'bash'
+- bash
 installation:
   scripts:
     dir: $HOME/.local/bin
     strip_ext: true
     files:
     - _feedback
-    - app_vol
-    - audio_pindex
     - b64_time
-    - compact
     - dense_roach
     - emoji_sel.sh
-    - fmenu
-    - globgrep.bash
-    - locale_toggle
     - makemd
-    - nice_name
-    - nundle
-    - rrg
     - shorten_path.pl
-    - theft
-    - tui_light
     - unb64_time
     - wedit
     - doat.bash
-    - yt_pl_parse
   setup:
     dir: $HOME/.config/bash/setup
     renamed_files:
-    - src: 'autocomplete.bash'
-      dest: '999_misc_utils_autocomplete.bash'
-    - src: '_feedback.bash'
-      dest: '999_feedback.bash'
+    - src: autocomplete.bash
+      dest: 999_misc_utils_autocomplete.bash
+    - src: _feedback.bash
+      dest: 999_feedback.bash
 

@@ -1,6 +1,0 @@
-#!/bin/bash
-# Gets videos from a playlist
-[[ -z "$1" ]] && echo "requires an arg" && exit 1
-filename=$(date -Iseconds)
-echo -e "$filename\nSource : $1" > "$filename"
-yt-dlp --flat-playlist --print filename -o '[%(channel)s] %(title)s {%(id)s}' "$1" | tee -a "$filename"
