@@ -17,6 +17,7 @@ installation:
     - wedit
     - doat.bash
     - rrg.bash
+    - arg.bash
   setup:
     dir: $HOME/.config/bash/setup
     renamed_files:
