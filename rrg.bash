@@ -1,20 +1,25 @@
 #!/bin/bash
-HELP_MSG="usage: rrg [-t FILETYPE] [-T FILETYPE] [-h] [-p] EXPR...
+HELP_MSG="usage: rrg [-d] [-t FILETYPE]... [-T FILETYPE]... [-h] [-p] EXPR...
 Search for files under the directory tree with occurences of all the
 given expressions, sort of a 'recursive' grep.
   -p    only prints matching lines, instead of selecting them through fzf for vim
   -t    restrict search to the given filetypes
-  -T    ignores files of the given type for the search"
+  -T    ignores files of the given type for the search
+  -d    outputs debug information"
 INTERACTIVE=true
 COLOR=always
 VIMGREP='--vimgrep'
+DEBUG=false
+ft=()
+FT=()
 
-while getopts "hpt:T:" opt; do
+while getopts "dhpt:T:" opt; do
     case $opt in
         h)  echo "$HELP_MSG"
             exit 0;;
-        t)  ft="--type $(sed 's/,/ --type /g' <<< "$OPTARG")";;
-        T)  FT="--type-not $(sed 's/,/ --type-not /g' <<< "$OPTARG")";;
+        d)  DEBUG=true;;
+        t)  ft+=($OPTARG);;
+        T)  FT+=($OPTARG);;
         p)  INTERACTIVE=false
             VIMGREP=
             COLOR=auto;;
@@ -23,27 +28,35 @@ while getopts "hpt:T:" opt; do
             exit 1;;
     esac
 done
-
 shift $(($OPTIND-1))
+
+# Convert types into rg flags
+if [[ ${#ft[@]} != 0 ]]; then
+    ft=$(printf -- "--type %s " "${ft[@]}")
+fi
+
+if [[ ${#FT[@]} != 0 ]]; then
+    FT=$(printf -- "--type-not %s " "${FT[@]}")
+fi
 
 # Filter files to extract those that contain all the patterns
 files=(.)
 for expr in "$@"; do
-    mapfile -t files < <(rg $ft $FT --with-filename --count -- "$expr" "${files[@]}" | cut -f1 -d:)
+    $DEBUG && echo rg $ft $FT --files-with-matches -- "$expr" "${files[@]}"
+    mapfile -t files < <(rg $ft $FT --files-with-matches -- "$expr" "${files[@]}" | cut -f1 -d:)
     if [[ ${#files[@]} = 0 ]]; then
         echo "No file matching all these expressions found."
         exit 1
     fi
 done
 
-# Re-run search to get all matching lines
-result_lines=()
-for expr in "$@"; do
-    mapfile -O ${#result_lines[@]} result_lines < <(rg $VIMGREP --with-filename --color=$COLOR "$expr" "${files[@]}")
-done
-
 if $INTERACTIVE; then
-    printf "%s" "${result_lines[@]}" | frg
+    output_prg=frg
 else
-    printf "%s" "${result_lines[@]}"
+    output_prg=cat
 fi
+
+# Re-run search to get all matching lines
+for expr in "$@"; do
+    rg $VIMGREP --with-filename --color=$COLOR "$expr" "${files[@]}"
+done | $output_prg
