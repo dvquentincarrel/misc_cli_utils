@@ -1,5 +1,7 @@
 dependencies:
 - bash
+opt_dependencies:
+- rg
 installation:
   scripts:
     dir: $HOME/.local/bin
@@ -14,6 +16,7 @@ installation:
     - unb64_time
     - wedit
     - doat.bash
+    - rrg.bash
   setup:
     dir: $HOME/.config/bash/setup
     renamed_files:
