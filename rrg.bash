@@ -1,24 +1,35 @@
 #!/bin/bash
-HELP_MSG="usage: rrg EXPR...
+HELP_MSG="usage: rrg [-t FILETYPE] [-T FILETYPE] [-h] [-p] EXPR...
 Search for files under the directory tree with occurences of all the
-given expressions, sort of a 'recursive' grep."
+given expressions, sort of a 'recursive' grep.
+  -p    only prints matching lines, instead of selecting them through fzf for vim
+  -t    restrict search to the given filetypes
+  -T    ignores files of the given type for the search"
 INTERACTIVE=true
 COLOR=always
 VIMGREP='--vimgrep'
 
-if [[ $1 =~ -(h|-help) ]]; then
-    echo "$HELP_MSG"
-    exit 0
-elif [[ $1 =~ -(p|-print) ]]; then
-    INTERACTIVE=false
-    VIMGREP=
-    COLOR=auto
-fi
+while getopts "hpt:T:" opt; do
+    case $opt in
+        h)  echo "$HELP_MSG"
+            exit 0;;
+        t)  ft="--type $(sed 's/,/ --type /g' <<< "$OPTARG")";;
+        T)  FT="--type-not $(sed 's/,/ --type-not /g' <<< "$OPTARG")";;
+        p)  INTERACTIVE=false
+            VIMGREP=
+            COLOR=auto;;
+        *)  echo -e"invalid option '$opt'\n"
+            echo "$helpmsg"
+            exit 1;;
+    esac
+done
+
+shift $(($OPTIND-1))
 
 # Filter files to extract those that contain all the patterns
 files=(.)
 for expr in "$@"; do
-    read -ra files < <(rg --with-filename --count -- "$expr" "${files[@]}" | cut -f1 -d:)
+    mapfile -t files < <(rg $ft $FT --with-filename --count -- "$expr" "${files[@]}" | cut -f1 -d:)
     if [[ ${#files[@]} = 0 ]]; then
         echo "No file matching all these expressions found."
         exit 1
